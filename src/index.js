@@ -29,9 +29,9 @@ app.use(async (req, res, next) => {
 
 // Routes
 
-app.get('/me', async ({ me }, res) => {
+app.get('/me', async ({ models, me }, res) => {
   const user = await models.User.findById(me.id);
-  return res.send(user);
+  return res.send(me);
 });
 
 app.get('/users', async ({ models }, res) => {
@@ -39,22 +39,22 @@ app.get('/users', async ({ models }, res) => {
   return res.send(users);
 });
 
-app.get('/users/:userId', async (req, res) => {
-  const user = await models.User.findById(req.params.userId);
+app.get('/users/:userId', async ({ params, models }, res) => {
+  const user = await models.User.findById(params.userId);
   return res.send(user);
 });
 
-app.get('/messages', async (req, res) => {
+app.get('/messages', async ({ models }, res) => {
   const messages = await models.Message.findAll();
   return res.send(messages);
 });
 
-app.get('/messages/:messageId', async (req, res) => {
-  const message = await models.User.findById(req.params.messageId);
+app.get('/messages/:messageId', async ({ params, models }, res) => {
+  const message = await models.User.findById(params.messageId);
   return res.send(message);
 });
 
-app.post('/messages', async ({ body: { text }, me }, res) => {
+app.post('/messages', async ({ body: { text }, models, me }, res) => {
   const message = await models.Message.create({
     text,
     userId: me.id,
@@ -63,13 +63,16 @@ app.post('/messages', async ({ body: { text }, me }, res) => {
   return res.send(message);
 });
 
-app.delete('/messages/:messageId', async (req, res) => {
-  const result = await models.Message.destroy({
-    where: { id: req.params.messageId },
-  });
+app.delete(
+  '/messages/:messageId',
+  async ({ params, models }, res) => {
+    const result = await models.Message.destroy({
+      where: { id: params.messageId },
+    });
 
-  return res.send(true);
-});
+    return res.send(true);
+  },
+);
 
 const eraseDatabaseOnSync = true;
 
