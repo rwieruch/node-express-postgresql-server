@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import cors from 'cors';
-import uuidv4 from 'uuid/v4';
 import bodyParser from 'body-parser';
 import express from 'express';
 
@@ -16,94 +15,103 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Postman: raw + JSON (application/json)
 app.use(bodyParser.json());
 
-// Sample Data
-
-let users = {
-  1: {
-    id: '1',
-    username: 'Robin Wieruch',
-    messageIds: [1],
-  },
-  2: {
-    id: '2',
-    username: 'Dave Davids',
-    messageIds: [2],
-  },
-};
-
-let messages = {
-  1: {
-    id: '1',
-    text: 'Hello World',
-    userId: '1',
-  },
-  2: {
-    id: '2',
-    text: 'By World',
-    userId: '2',
-  },
-};
-
 // Application-Level Middleware
 
 app.use((req, res, next) => {
-  req.me = users[1];
+  req.models = models;
+  next();
+});
+
+app.use(async (req, res, next) => {
+  req.me = await models.User.findByLogin('rwieruch');
   next();
 });
 
 // Routes
 
-app.get('/me', ({ me }, res) => {
-  return res.send(users[me.id]);
+app.get('/me', async ({ me }, res) => {
+  const user = await models.User.findById(me.id);
+  return res.send(user);
 });
 
-app.get('/users', (req, res) => {
-  return res.send(Object.values(users));
+app.get('/users', async ({ models }, res) => {
+  const users = await models.User.findAll();
+  return res.send(users);
 });
 
-app.get('/users/:userId', (req, res) => {
-  return res.send(users[req.params.userId]);
+app.get('/users/:userId', async (req, res) => {
+  const user = await models.User.findById(req.params.userId);
+  return res.send(user);
 });
 
-app.get('/messages', (req, res) => {
-  return res.send(Object.values(messages));
+app.get('/messages', async (req, res) => {
+  const messages = await models.Message.findAll();
+  return res.send(messages);
 });
 
-app.get('/messages/:messageId', (req, res) => {
-  return res.send(messages[req.params.messageId]);
+app.get('/messages/:messageId', async (req, res) => {
+  const message = await models.User.findById(req.params.messageId);
+  return res.send(message);
 });
 
-app.post('/messages', ({ body: { text }, me }, res) => {
-  const id = uuidv4();
-  const message = {
-    id,
-    text: text,
+app.post('/messages', async ({ body: { text }, me }, res) => {
+  const message = await models.Message.create({
+    text,
     userId: me.id,
-  };
-
-  messages[id] = message;
-  users[me.id].messageIds.push(id);
+  });
 
   return res.send(message);
 });
 
-app.delete('/messages/:messageId', (req, res) => {
-  const {
-    [req.params.messageId]: message,
-    ...otherMessages
-  } = messages;
-
-  if (!message) {
-    return res.send(false);
-  }
-
-  messages = otherMessages;
+app.delete('/messages/:messageId', async (req, res) => {
+  const result = await models.Message.destroy({
+    where: { id: req.params.messageId },
+  });
 
   return res.send(true);
 });
 
-sequelize.sync().then(() => {
+const eraseDatabaseOnSync = true;
+
+sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
+  if (eraseDatabaseOnSync) {
+    createUsersWithMessages();
+  }
+
   app.listen(process.env.PORT, () =>
     console.log(`Example app listening on port ${process.env.PORT}!`),
   );
 });
+
+const createUsersWithMessages = async () => {
+  await models.User.create(
+    {
+      username: 'rwieruch',
+      messages: [
+        {
+          text: 'Published the Road to learn React',
+        },
+      ],
+    },
+    {
+      include: [models.Message],
+    },
+  );
+
+  await models.User.create(
+    {
+      username: 'ddavids',
+      messages: [
+        {
+          text: 'Happy to release ...',
+        },
+        {
+          text: 'Published a complete ...',
+        },
+      ],
+    },
+    {
+      include: [models.Message],
+    },
+  );
+};
