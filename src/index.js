@@ -50,7 +50,7 @@ app.get('/messages', async ({ models }, res) => {
 });
 
 app.get('/messages/:messageId', async ({ params, models }, res) => {
-  const message = await models.User.findById(params.messageId);
+  const message = await models.Message.findById(params.messageId);
   return res.send(message);
 });
 
