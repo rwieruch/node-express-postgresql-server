@@ -4,6 +4,8 @@ import uuidv4 from 'uuid/v4';
 import bodyParser from 'body-parser';
 import express from 'express';
 
+import models, { sequelize } from './models';
+
 const app = express();
 
 app.use(cors());
@@ -52,7 +54,7 @@ app.use((req, res, next) => {
 // Routes
 
 app.get('/me', ({ me }, res) => {
-  return res.send(users[me.userId]);
+  return res.send(users[me.id]);
 });
 
 app.get('/users', (req, res) => {
@@ -100,6 +102,8 @@ app.delete('/messages/:messageId', (req, res) => {
   return res.send(true);
 });
 
-app.listen(process.env.PORT, () =>
-  console.log(`Example app listening on port ${process.env.PORT}!`),
-);
+sequelize.sync().then(() => {
+  app.listen(process.env.PORT, () =>
+    console.log(`Example app listening on port ${process.env.PORT}!`),
+  );
+});
