@@ -7,15 +7,12 @@ import models, { sequelize } from './models';
 
 const app = express();
 
+// Application-Level Middleware
+
 app.use(cors());
 
-// Postman: x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Postman: raw + JSON (application/json)
 app.use(bodyParser.json());
-
-// Application-Level Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   req.models = models;
@@ -29,50 +26,49 @@ app.use(async (req, res, next) => {
 
 // Routes
 
-app.get('/me', async ({ models, me }, res) => {
-  const user = await models.User.findById(me.id);
-  return res.send(me);
-});
-
-app.get('/users', async ({ models }, res) => {
-  const users = await models.User.findAll();
-  return res.send(users);
-});
-
-app.get('/users/:userId', async ({ params, models }, res) => {
-  const user = await models.User.findById(params.userId);
+app.get('/me', async (req, res) => {
+  const user = await req.models.User.findById(req.me.id);
   return res.send(user);
 });
 
-app.get('/messages', async ({ models }, res) => {
-  const messages = await models.Message.findAll();
+app.get('/users', async (req, res) => {
+  const users = await req.models.User.findAll();
+  return res.send(users);
+});
+
+app.get('/users/:userId', async (req, res) => {
+  const user = await req.models.User.findById(req.params.userId);
+  return res.send(user);
+});
+
+app.get('/messages', async (req, res) => {
+  const messages = await req.models.Message.findAll();
   return res.send(messages);
 });
 
-app.get('/messages/:messageId', async ({ params, models }, res) => {
-  const message = await models.Message.findById(params.messageId);
+app.get('/messages/:messageId', async (req, res) => {
+  const message = await req.models.Message.findById(
+    req.params.messageId,
+  );
   return res.send(message);
 });
 
-app.post('/messages', async ({ body: { text }, models, me }, res) => {
-  const message = await models.Message.create({
-    text,
-    userId: me.id,
+app.post('/messages', async (req, res) => {
+  const message = await req.models.Message.create({
+    text: req.body.text,
+    userId: req.me.id,
   });
 
   return res.send(message);
 });
 
-app.delete(
-  '/messages/:messageId',
-  async ({ params, models }, res) => {
-    const result = await models.Message.destroy({
-      where: { id: params.messageId },
-    });
+app.delete('/messages/:messageId', async (req, res) => {
+  const result = await req.models.Message.destroy({
+    where: { id: req.params.messageId },
+  });
 
-    return res.send(true);
-  },
-);
+  return res.send(result);
+});
 
 const eraseDatabaseOnSync = true;
 
