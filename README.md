@@ -9,6 +9,7 @@ An easy way to get started with a Express server with PostgreSQL with Node.js.
 * Babel 7
 * Environment Variables
 * Express
+* REST API
 * PostgreSQL
 
 ## Requirements
@@ -23,6 +24,7 @@ An easy way to get started with a Express server with PostgreSQL with Node.js.
 * `npm install`
 * [start PostgreSQL](https://www.robinwieruch.de/postgres-express-setup-tutorial/)
 * `npm start`
+* optional: include *.env* in your *.gitignore*
 
 ### GET Routes
 
