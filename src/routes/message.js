@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:messageId', async (req, res) => {
-  const message = await req.context.models.Message.findById(
+  const message = await req.context.models.Message.findByPk(
     req.params.messageId,
   );
   return res.send(message);
