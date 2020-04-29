@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import express from 'express';
 
 import models, { sequelize } from './models';
@@ -12,8 +11,8 @@ const app = express();
 
 app.use(cors());
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(async (req, res, next) => {
   req.context = {
