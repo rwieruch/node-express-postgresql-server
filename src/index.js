@@ -2,7 +2,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 
-import models from './models';
+import models, { sequelize } from './models';
 import routes from './routes';
 
 const app = express();
@@ -36,6 +36,10 @@ app.use('/messages', routes.message);
 
 // * Start * //
 
-app.listen(process.env.PORT, () =>
-  console.log(`Example app listening on port ${process.env.PORT}!`),
-);
+const eraseDatabaseOnSync = true;
+
+sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
+  app.listen(process.env.PORT, () =>
+    console.log(`Example app listening on port ${process.env.PORT}!`),
+  );
+});
