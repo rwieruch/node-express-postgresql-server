@@ -20,7 +20,7 @@ An easy way to get started with a Express server with PostgreSQL with Node.js. [
 - `git clone git@github.com:rwieruch/node-express-postgresql-server.git`
 - `cd node-express-postgresql-server`
 - `npm install`
-- [start PostgreSQL](https://www.robinwieruch.de/postgres-express-setup-tutorial/)
+- `docker-compose up`
 - `npm start`
 - optional: include _.env_ in your _.gitignore_
 
