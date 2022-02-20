@@ -7,12 +7,18 @@ import routes from './routes';
 
 const app = express();
 
-// Application-Level Middleware
+// * Application-Level Middleware * //
+
+// Third-Party Middleware
 
 app.use(cors());
 
+// Built-In Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Custom Middleware
 
 app.use(async (req, res, next) => {
   req.context = {
@@ -22,13 +28,13 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Routes
+// * Routes * //
 
 app.use('/session', routes.session);
 app.use('/users', routes.user);
 app.use('/messages', routes.message);
 
-// Start
+// * Start * //
 
 const eraseDatabaseOnSync = true;
 
