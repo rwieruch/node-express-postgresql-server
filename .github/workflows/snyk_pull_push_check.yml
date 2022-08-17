@@ -1,0 +1,56 @@
+
+ # Controls when the workflow will run
+ on:
+   # Triggers the workflow on push or pull request events but only for the main branch
+   push:
+     branches: [ main ]
+   pull_request:
+     branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+ jobs:
+   security:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@master
+       - name: Run Snyk to check for vulnerabilities
+         uses: snyk/actions/node@master
+         env:
+           SNYK_TOKEN: secrets.SNYK_TOKEN 
+         with:
+           command: monitor
+
+   build:
+     runs-on: ubuntu-latest
+     strategy:
+       matrix:
+       node-version: [10.x, 12.x, 14.x, 15.x]
+
+     steps:
+       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+       - uses: actions/checkout@v2
+       - name: Use Node.js ${{matrix.node-version }}
+         uses: actions/setup-node@v2
+         with:
+           node-version: ${{ matrix.node-version }}
+       - name: Install dependencies
+         run: npm ci
+       - run: npm run build --if-present
+       - run: npm test
+
+   publish:
+     needs: [security, build]
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v2
+       - name: Use Node.js
+         uses: actions/setup-node@v2
+         with:
+           node-version: '15.x'
+           registry-url: 'https://registry.npmjs.org'
+       - name: Install dependencies
+         run: npm ci
+       - name: Publish
+         run: npm publish
+         env:
+           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
